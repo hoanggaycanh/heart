@@ -72,8 +72,8 @@
       return { x, y };
     }
 
-    for (let i = 0; i < 2000; i++) {
-      const t = Math.random() * Math.PI * 4;
+    for (let i = 0; i < 4000; i++) {
+      const t = Math.random() * Math.PI * 3;
       const { x, y } = heartFunction(t);
       pixels.push({
         baseX: centerX + x * heartScale,
