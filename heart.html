@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chúc mừng 20/10 bạn Thảo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      background-color: black;
+      overflow: hidden;
+      font-family: 'Dancing Script', cursive;
+    }
+
+    canvas {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 28px;
+      text-align: center;
+      line-height: 1.6;
+      font-weight: 400;
+      white-space: pre-line;
+    }
+
+    .message span {
+      opacity: 0;
+      animation: fadeIn 0.3s forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="heartCanvas"></canvas>
+  <canvas id="petalCanvas"></canvas>
+  <canvas id="smallHeartCanvas"></canvas>
+  <div class="message" id="message"></div>
+
+  <script>
+    // ----- Canvas cỡ đầy màn -----
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+
+    // ----- Trái tim pixel lớn -----
+    const heartCanvas = document.getElementById("heartCanvas");
+    const ctx = heartCanvas.getContext("2d");
+    heartCanvas.width = W;
+    heartCanvas.height = H;
+
+    const pixelSize = 3;
+    const heartScale = 14;
+    const centerX = W / 2;
+    const centerY = H / 2;
+    const pixels = [];
+
+  function heartFunction(t) {
+      const x = 17 * Math.pow(Math.sin(t), 3);
+      const y = 14 * Math.cos(t) - 6 * Math.cos(2 * t) - 3 * Math.cos(3 * t) - Math.cos(4 * t);
+      return { x, y };
+    }
+
+    for (let i = 0; i < 2000; i++) {
+      const t = Math.random() * Math.PI * 2;
+      const { x, y } = heartFunction(t);
+      pixels.push({
+        baseX: centerX + x * heartScale,
+        baseY: centerY - y * heartScale,
+        offsetX: (Math.random() - 0.5) * 6,
+        offsetY: (Math.random() - 0.5) * 6,
+        speedX: (Math.random() - 0.5) * 2,
+        speedY: (Math.random() - 0.5) * 2,
+        color: Math.random() > 0.5 ? "#ff69b4" : "#ff1493"
+      });
+    }
+
+    function animateHeart() {
+      ctx.clearRect(0, 0, W, H);
+      for (let p of pixels) {
+        p.offsetX += p.speedX;
+        p.offsetY += p.speedY;
+        if (Math.abs(p.offsetX) > 10 || Math.abs(p.offsetY) > 10) {
+          p.speedX *= -1;
+          p.speedY *= -1;
+        }
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.baseX + p.offsetX, p.baseY + p.offsetY, pixelSize, pixelSize);
+      }
+      requestAnimationFrame(animateHeart);
+    }
+    animateHeart();
+
+    // ----- Hoa đào -----
+    const petalCanvas = document.getElementById("petalCanvas");
+    const pctx = petalCanvas.getContext("2d");
+    petalCanvas.width = W;
+    petalCanvas.height = H;
+
+    const petals = [];
+    const petalCount = 250;
+    const colors = ["#ffc0cb", "#ffb6c1", "#ff69b4", "#ffb7d5", "#ff8fa3"];
+
+    class Petal {
+      constructor() { this.reset(); }
+      reset() {
+        this.x = Math.random() * W;
+        this.y = Math.random() * -H;
+        this.size = Math.random() * 8 + 4;
+        this.speedY = Math.random() * 2 + 2.5;
+        this.speedX = Math.random() * 1.5 + 1;
+        this.angle = Math.random() * Math.PI * 2;
+        this.spin = (Math.random() - 0.5) * 0.3;
+        this.color = colors[Math.floor(Math.random() * colors.length)];
+      }
+      update() {
+        this.y += this.speedY;
+        this.x += this.speedX + Math.sin(this.y * 0.02) * 0.5;
+        this.angle += this.spin;
+        if (this.x > W + 50 || this.y > H) {
+          this.reset();
+          this.x = -20;
+        }
+      }
+      draw() {
+        pctx.save();
+        pctx.translate(this.x, this.y);
+        pctx.rotate(this.angle);
+        pctx.scale(1, 0.7);
+        pctx.beginPath();
+        pctx.moveTo(0, 0);
+        pctx.quadraticCurveTo(this.size / 2, -this.size / 2, 0, -this.size);
+        pctx.quadraticCurveTo(-this.size / 2, -this.size / 2, 0, 0);
+        pctx.fillStyle = this.color;
+        pctx.fill();
+        pctx.restore();
+      }
+    }
+
+    for (let i = 0; i < petalCount; i++) petals.push(new Petal());
+
+    function animatePetals() {
+      pctx.clearRect(0, 0, W, H);
+      petals.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      requestAnimationFrame(animatePetals);
+    }
+    animatePetals();
+
+    // ----- Trái tim nhỏ khi hiện chữ -----
+    const smallHeartCanvas = document.getElementById("smallHeartCanvas");
+    const sctx = smallHeartCanvas.getContext("2d");
+    smallHeartCanvas.width = W;
+    smallHeartCanvas.height = H;
+
+    const smallHearts = [];
+
+    function drawSmallHeart(x, y, size, color) {
+      sctx.save();
+      sctx.translate(x, y);
+      sctx.beginPath();
+      sctx.moveTo(0, size / 4);
+      sctx.bezierCurveTo(size / 2, -size / 2, size, size / 3, 0, size);
+      sctx.bezierCurveTo(-size, size / 3, -size / 2, -size / 2, 0, size / 4);
+      sctx.fillStyle = color;
+      sctx.fill();
+      sctx.restore();
+    }
+
+    function spawnSmallHearts() {
+      for (let i = 0; i < 30; i++) {
+        smallHearts.push({
+          x: Math.random() * W,
+          y: Math.random() * H,
+          size: 10,
+          color: ["#ff6666", "#b30000", "#ffcccc"][Math.floor(Math.random() * 3)],
+          alpha: 1,
+          life: 0
+        });
+      }
+    }
+
+    function animateSmallHearts() {
+      sctx.clearRect(0, 0, W, H);
+      for (let h of smallHearts) {
+        h.life += 0.02;
+        h.alpha -= 0.015;
+        drawSmallHeart(h.x, h.y - Math.sin(h.life * 3) * 5, h.size, h.color);
+      }
+      // Xóa những tim đã mờ
+      for (let i = smallHearts.length - 1; i >= 0; i--) {
+        if (smallHearts[i].alpha <= 0) smallHearts.splice(i, 1);
+      }
+      requestAnimationFrame(animateSmallHearts);
+    }
+    animateSmallHearts();
+
+    // ----- Hiệu ứng chữ -----
+    const messageEl = document.getElementById("message");
+    const text = "Chúc mừng 20/10 Thảo xinh đẹp nha,\nbạn là bông hoa đẹp nhất trên đời 🌸";
+
+    function showMessage() {
+      messageEl.innerHTML = "";
+      text.split("").forEach((char, i) => {
+        const span = document.createElement("span");
+        span.textContent = char;
+        span.style.animationDelay = `${i * 0.05}s`;
+        messageEl.appendChild(span);
+      });
+
+      // Khi chữ bắt đầu xuất hiện → sinh tim nhỏ
+      spawnSmallHearts();
+
+      // Sau khi chữ xuất hiện xong → xóa và lặp lại
+      const totalDuration = text.length * 50 + 2000;
+      setTimeout(() => {
+        messageEl.innerHTML = "";
+        setTimeout(showMessage, 1000);
+      }, totalDuration);
+    }
+
+    showMessage();
+
+    window.addEventListener("resize", () => {
+      heartCanvas.width = petalCanvas.width = smallHeartCanvas.width = window.innerWidth;
+      heartCanvas.height = petalCanvas.height = smallHeartCanvas.height = window.innerHeight;
+    });
+  </script>
+  <script>
+  // Tự động ghi lại hiệu ứng trên toàn trang trong 6 giây
+  async function recordToWebM() {
+    const stream = document.body.captureStream(30); // 30 FPS
+    const recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+    let chunks = [];
+
+    recorder.ondataavailable = e => chunks.push(e.data);
+    recorder.onstop = e => {
+      const blob = new Blob(chunks, { type: 'video/webm' });
+      const url = URL.createObjectURL(blob);
+
+      // Tạo link tải file .webm
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'heart_animation.webm';
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    recorder.start();
+    await new Promise(resolve => setTimeout(resolve, 6000)); // Quay 6 giây
+    recorder.stop();
+  }
+
+  // Tự động chạy ghi hình sau 2 giây để kịp load hiệu ứng
+  setTimeout(recordToWebM, 2000);
+</script>
+</body>
+</html>
